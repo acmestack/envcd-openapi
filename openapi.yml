@@ -1,0 +1,411 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/acmestack/envcd-project/1.0.0
+info:
+  description: acmestack envcd openapd document
+  version: "1.0.0"
+  title: envcd openapi
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: developers
+    description: Operations available to regular developers
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: This can only be done by the logged in user(admin/super).
+      operationId: createUser
+      responses:
+        default:
+          description: successful operation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Created user object
+        required: true
+  /user/login:
+    post:
+      tags:
+        - user
+      summary: Logs user into the system
+      operationId: loginUser
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password supplied
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      operationId: logoutUser
+      responses:
+        default:
+          description: successful operation
+  '/user/{userId}':
+    get:
+      tags:
+        - user
+      summary: Get user by id
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user(admin/super).
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: integer
+      responses:
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+  '/v1/user/{userId}/application/{appId}':
+    get:
+      tags:
+        - envcd application
+      summary: Place an order for a pet
+      operationId: placeOrder
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          description: Invalid Order
+    put:
+      tags: 
+        - envcd application
+      summary: update user's application
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: update application name
+                  type: string
+                state:
+                  description: update application state
+                  type: integer
+                note:
+                  description: update application note
+                  type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '400':
+          description: Invalid Order
+    delete:
+      tags: 
+        - envcd application
+      summary: delete user's application
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid Order
+  '/v1/user/{userId}/application/{appId}/config/{configId}':
+    get:
+      tags:
+        - envcd config
+      summary: query user config
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: configId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationConfig'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ApplicationConfig'
+        '400':
+          description: Invalid Order
+    put:
+      tags:
+        - envcd config
+      summary: query user config
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: configId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dictKey:
+                  description: current dict key
+                  type: string
+                dictVal:
+                  description: dict value
+                  type: string
+                state:
+                  description: update application state
+                  type: boolean
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid Order
+    delete:
+      tags: 
+        - envcd config
+      summary: delete user's application
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: configId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid Order
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        identity:
+          type: integer
+        state:
+          type: boolean
+      xml:
+        name: User
+    Application:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        note:
+          type: string
+        state:
+          type: boolean
+        edit:
+          type: boolean
+          description: edit enable
+        createdAt:
+          type: string
+          description: create time
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        updateAt:
+          type: string
+          description: update time
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+      xml:
+        name: Order
+    ApplicationConfig:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        appId:
+          type: integer
+          example: 1
+        dictKey:
+          type: string
+          example: "/admin/testApp/xxxid"
+        dictVal:
+          type: string
+          example: "id=ming"
+        state:
+          type: boolean
+          example: true
+        createAt:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        updateAt:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
