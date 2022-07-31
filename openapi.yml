@@ -18,8 +18,8 @@ tags:
   - name: developers
     description: Operations available to regular developers
 paths:
-  /admin/user:
-    put:
+  /user:
+    post:
       tags:
         - user
       summary: Create user
@@ -35,7 +35,7 @@ paths:
               $ref: '#/components/schemas/User'
         description: Created user object
         required: true
-  /admin/user/login:
+  /user/login:
     post:
       tags:
         - user
@@ -57,9 +57,27 @@ paths:
       responses:
         '200':
           description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
         '400':
           description: Invalid username/password supplied
-  /admin/user/logout:
+  /user/logout:
     get:
       tags:
         - user
@@ -68,7 +86,7 @@ paths:
       responses:
         default:
           description: successful operation
-  '/admin/user/{userId}':
+  '/user/{userId}':
     get:
       tags:
         - user
@@ -113,7 +131,7 @@ paths:
           description: Invalid username supplied
         '404':
           description: User not found
-  '/v1/envcd/user/{userId}/application/{appId}':
+  '/v1/user/{userId}/application/{appId}':
     get:
       tags:
         - envcd application
@@ -145,7 +163,7 @@ paths:
         '400':
           description: Invalid Order
     put:
-      tags:
+      tags: 
         - envcd application
       summary: update user's application
       parameters:
@@ -189,7 +207,7 @@ paths:
         '400':
           description: Invalid Order
     delete:
-      tags:
+      tags: 
         - envcd application
       summary: delete user's application
       parameters:
@@ -210,7 +228,7 @@ paths:
           description: successful operation
         '400':
           description: Invalid Order
-  '/v1/envcd/user/{userId}/application/{appId}/config/{configId}':
+  '/v1/user/{userId}/application/{appId}/config/{configId}':
     get:
       tags:
         - envcd config
@@ -290,7 +308,7 @@ paths:
         '400':
           description: Invalid Order
     delete:
-      tags:
+      tags: 
         - envcd config
       summary: delete user's application
       parameters:
