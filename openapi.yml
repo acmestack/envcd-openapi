@@ -210,7 +210,7 @@ paths:
           description: successful operation
         '400':
           description: Invalid Order
-  '/v1/envcd/user/{userId}/application/{appId}/config/{configId}':
+  '/v1/envcd/user/{userId}/application/{appId}/dict/{dictId}':
     get:
       tags:
         - envcd config
@@ -228,7 +228,7 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: configId
+        - name: dictId
           in: path
           required: true
           schema:
@@ -263,7 +263,7 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: configId
+        - name: dictId
           in: path
           required: true
           schema:
@@ -306,7 +306,7 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: configId
+        - name: dictId
           in: path
           required: true
           schema:
