@@ -18,29 +18,44 @@ tags:
   - name: developers
     description: Operations available to regular developers
 paths:
-  /admin/user:
-    put:
-      tags:
-        - user
-      summary: Create user
-      description: This can only be done by the logged in user(admin/super).
-      operationId: createUser
-      responses:
-        default:
-          description: successful operation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Created user object
-        required: true
-  /admin/user/login:
+  /login:
     post:
       tags:
-        - user
-      summary: Logs user into the system
-      operationId: loginUser
+        - login
+      summary: user login into the system
+      operationId: login
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login, this is required.
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text, this is required.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccess'
+        '400':
+          description: Invalid username/password supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginFailed'
+  /logout:
+    get:
+      tags:
+        - logout
+      summary: Logs out current logged in user session
+      operationId: logout
       parameters:
         - name: username
           in: query
@@ -48,32 +63,223 @@ paths:
           required: true
           schema:
             type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
+      responses:
+        '200':
+          description: logout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Logout'
+        '400':
+          description: create success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultFailed'
+  /v1/users:
+    post:
+      tags:
+        - user
+      summary: create user
+      description: This can only be done by the logged in user(admin/super).
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Created user object
+        required: true
+      responses:
+        '200':
+          description: create success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultSuccess'
+        '400':
+          description: create success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultFailed'
+  /v1/users/pageNum/{pageNum}/pageSize/{pageSize}:
+    get:
+      tags:
+        - user
+      summary: get pageable users
+      description: This can only be done by the logged in user(admin/super).
+      operationId: users
+      parameters:
+        - name: pageNum
+          in: path
+          description: page number
           required: true
           schema:
-            type: string
+            type: integer
+            default: 1
+        - name: pageSize
+          in: path
+          description: page size
+          required: true
+          schema:
+            type: integer
+            default: 10
+      responses:
+        default:
+          description: query users success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserVO'
+  '/v1/users/{userId}':
+    put:
+      tags:
+        - user
+      summary: update user by id
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Created user object
+        required: true
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultSuccess'
         '400':
-          description: Invalid username/password supplied
-  /admin/user/logout:
+          description: Invalid username supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultFailed'
     get:
       tags:
         - user
-      summary: Logs out current logged in user session
-      operationId: logoutUser
+      summary: get user by id
+      operationId: userById
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing.
+          required: true
+          schema:
+            type: integer
       responses:
-        default:
+        '200':
           description: successful operation
-  '/admin/user/{userId}':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserEntity'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+    delete:
+      tags:
+        - user
+      summary: delete user
+      description: This can only be done by the logged in user(admin/super).
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: user delete successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultSuccess'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultFailed'
+  '/v1/users/{userId}/scopespaces':
     get:
       tags:
         - user
-      summary: Get user by id
-      operationId: getUserById
+      summary: get user's scopesapce by user id
+      operationId: userScopeSpaces
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopeSpace'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ScopeSpace'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+  '/v1/users/{userId}/scopespace/{scopeSpaceId}/dictionaries':
+    get:
+      tags:
+        - user
+      summary: get dictionaries by userId and scopeSpaceId
+      operationId: userDictionariesUnderScopeSpace
+      parameters:
+        - name: userId
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing.
+          required: true
+          schema:
+            type: integer
+        - name: scopeSpaceId
+          in: path
+          description: The name that needs to be fetched. Use user1 for testing.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+  "/v1/users/{userId}/dictionaries":
+    get:
+      tags:
+        - user
+      summary: Get dictionaries by id
+      operationId: userDictionaries
       parameters:
         - name: userId
           in: path
@@ -95,67 +301,93 @@ paths:
           description: Invalid username supplied
         '404':
           description: User not found
-    delete:
-      tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user(admin/super).
-      operationId: deleteUser
-      parameters:
-        - name: userId
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: integer
-      responses:
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
-  '/v1/envcd/user/{userId}/application/{appId}':
+  '/v1/scopespaces/pageNum/{pageNum}/pageSize/{pageSize}':
     get:
       tags:
-        - envcd application
-      summary: Place an order for a pet
-      operationId: placeOrder
+        - envcd scopespaces
+      summary: get all scopespaces
+      operationId: scopespaces
       parameters:
-        - name: userId
+        - name: pageNum
           in: path
+          description: page number
           required: true
           schema:
             type: integer
-            format: int64
-        - name: appId
+            default: 1
+        - name: pageSize
           in: path
+          description: page size
           required: true
           schema:
             type: integer
-            format: int64
+            default: 10
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Application'
+                $ref: '#/components/schemas/ScopeSpaceVO'
             application/xml:
               schema:
-                $ref: '#/components/schemas/Application'
+                $ref: '#/components/schemas/ScopeSpaceVO'
         '400':
           description: Invalid Order
-    put:
+  '/v1/scopespaces':
+    post:
       tags:
-        - envcd application
+        - envcd scopespaces
       summary: update user's application
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopeSpaceDTO'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultSuccess'
+        '400':
+          description: Invalid Order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultFailed'
+  '/v1/scopespaces/{scopeSpaceId}':
+    get:
+      tags:
+        - envcd scopespaces
+      summary: get scopespaces by scopeSpaceId
       parameters:
-        - name: userId
+        - name: scopeSpaceId
           in: path
           required: true
           schema:
             type: integer
             format: int64
-        - name: appId
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopeSpace'
+        '400':
+          description: Invalid Order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopeSpace'
+    put:
+      tags:
+        - envcd scopespaces
+      summary: update scopesapce by scopeSpaceId
+      parameters:
+        - name: scopeSpaceId
           in: path
           required: true
           schema:
@@ -165,41 +397,26 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  description: update application name
-                  type: string
-                state:
-                  description: update application state
-                  type: integer
-                note:
-                  description: update application note
-                  type: string
+              $ref: '#/components/schemas/ScopeSpaceDTO'
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Application'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Application'
+                $ref: '#/components/schemas/DefaultSuccess'
         '400':
           description: Invalid Order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultFailed'
     delete:
       tags:
-        - envcd application
-      summary: delete user's application
+        - envcd scopespaces
+      summary: delete scopesapce by scopeSpaceId
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: appId
+        - name: scopeSpaceId
           in: path
           required: true
           schema:
@@ -208,27 +425,65 @@ paths:
       responses:
         '200':
           description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultSuccess'
         '400':
           description: Invalid Order
-  '/v1/envcd/user/{userId}/application/{appId}/dict/{dictId}':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultFailed'
+  '/v1/dictionaries/pageNum/{pageNum}/pageSize/{pageSize}':
     get:
       tags:
-        - envcd config
-      summary: query user config
+        - envcd dictionaries
+      summary: create dictionaries
+      operationId: createDictionary
       parameters:
-        - name: userId
+        - name: pageNum
           in: path
+          description: page number
           required: true
           schema:
             type: integer
-            format: int64
-        - name: appId
+            default: 1
+        - name: pageSize
           in: path
+          description: page size
           required: true
           schema:
             type: integer
-            format: int64
-        - name: dictId
+            default: 10
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DictionaryDTO'
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid Order
+    post:
+      tags:
+        - envcd dictionaries
+      summary: get all dictionaries
+      operationId: dictionaries
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid Order
+  '/v1/dictionaries/{dictionaryId}':
+    get:
+      tags:
+        - envcd dictionaries
+      summary: query dictionaries by dictionaryId
+      operationId: dictionary
+      parameters:
+        - name: dictionaryId
           in: path
           required: true
           schema:
@@ -248,22 +503,11 @@ paths:
           description: Invalid Order
     put:
       tags:
-        - envcd config
-      summary: query user config
+        - envcd dictionaries
+      summary: update dictionary
+      operationId: updateDictionary
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: appId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: dictId
+        - name: dictionaryId
           in: path
           required: true
           schema:
@@ -275,11 +519,11 @@ paths:
             schema:
               type: object
               properties:
-                dictKey:
-                  description: current dict key
+                configValue:
+                  description: config value
                   type: string
-                dictVal:
-                  description: dict value
+                version:
+                  description: config version
                   type: string
                 state:
                   description: update application state
@@ -291,22 +535,11 @@ paths:
           description: Invalid Order
     delete:
       tags:
-        - envcd config
-      summary: delete user's application
+        - envcd dictionaries
+      summary: delete dictionaries by dictionaryId
+      operationId: removeDictionary
       parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: appId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: dictId
+        - name: dictionaryId
           in: path
           required: true
           schema:
@@ -319,20 +552,151 @@ paths:
           description: Invalid Order
 components:
   schemas:
+    DefaultSuccess:
+      type: object
+      properties:
+        code:
+          type: string
+          default: "success"
+        message:
+          type: string
+          default: "success"
+    DefaultFailed:
+      type: object
+      properties:
+        code:
+          type: string
+          default: "failure"
+        message:
+          type: string
+          default: "failure"
+    LoginSuccess:
+      type: object
+      properties:
+        code:
+          type: string
+          example: loginSuccess
+        message:
+          type: string
+          example: login success!
+        data:
+          properties:
+            accessToken:
+              type: string
+              example: "afuaaj1ddf"
+            userId:
+              type: string
+              example: 1
+    LoginFailed:
+      type: object
+      properties:
+        code:
+          type: string
+          example: loginFailed
+        message:
+          type: string
+          example: login failed!
+    Logout:
+      type: object
+      properties:
+        code:
+          type: string
+          example: logout
+        message:
+          type: string
+          example: logout!
+    # UserDTO
     User:
       type: object
       properties:
         name:
           type: string
+          default: "ming"
+          description: when update, username can't edit
         password:
           type: string
+          default: "123456"
         identity:
+          type: string
+          default: "admin"
+        state:
+          type: string
+          default: "enabled"
+          description: user state
+    # UserVO: pageable users
+    UserVO:
+      type: object
+      properties:
+        code:
+          type: string
+          example: success
+        message:
+          type: string
+          example: success
+        data:
+          properties:
+            total:
+              type: integer
+            currentPage:
+              type: integer
+            pages:
+              type: integer
+            users:
+              type: array
+              example: ['#/components/schemas/UserEntity']
+    # UserEntityVO
+    UserEntity:
+      type: object
+      properties:
+        id:
           type: integer
+        name:
+          type: string
+        identity:
+          type: string
+        state:
+          type: string
+        createAt:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
+        updateAt:
+            type: string
+            format: date-time
+            example: '2016-08-29T09:12:33.001Z'
+      xml:
+        name: UserEntity
+    # ScopeSpaceVO: pageable ScopeSpaceVO
+    ScopeSpaceVO:
+      type: object
+      properties:
+        code:
+          type: string
+          example: success
+        message:
+          type: string
+          example: success
+        data:
+          properties:
+            total:
+              type: integer
+            currentPage:
+              type: integer
+            pages:
+              type: integer
+            scopespaces:
+               type: array
+               example: [ '#/components/schemas/UserEntity' ]
+    ScopeSpaceDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        note:
+          type: string
         state:
           type: boolean
-      xml:
-        name: User
-    Application:
+    ScopeSpace:
       type: object
       properties:
         id:
@@ -359,7 +723,39 @@ components:
           example: '2016-08-29T09:12:33.001Z'
       xml:
         name: Order
-    ApplicationConfig:
+    DictionaryVO:
+      type: object
+      properties:
+        code:
+          type: string
+          example: success
+        message:
+          type: string
+          example: success
+        data:
+          properties:
+            total:
+              type: integer
+            currentPage:
+              type: integer
+            pages:
+              type: integer
+            dictionaries:
+              type: array
+              example: [ '#/components/schemas/UserEntity' ]
+    DictionaryDTO:
+        type: object
+        properties:
+          dictKey:
+            type: string
+            example: "spring"
+          dictVal:
+            type: string
+            example: "id=ming"
+          state:
+            type: boolean
+            example: true
+    Dictionary:
       type: object
       required:
         - id
@@ -371,12 +767,12 @@ components:
         userId:
           type: integer
           example: 1
-        appId:
+        scopeSpaceId:
           type: integer
           example: 1
         dictKey:
           type: string
-          example: "/admin/testApp/xxxid"
+          example: "spring"
         dictVal:
           type: string
           example: "id=ming"
